@@ -1,9 +1,9 @@
-import assert from 'assert';
+import { URL as URL$1, fileURLToPath, pathToFileURL } from 'url';
 import fs from 'fs';
+import path from 'path';
 import moduleExports, { Module } from 'module';
 import { EOL } from 'os';
-import path from 'path';
-import { fileURLToPath, pathToFileURL, URL as URL$1 } from 'url';
+import assert from 'assert';
 
 const SAFE_TIME = 456789e3;
 
@@ -23,7 +23,7 @@ ppath.resolve = (...segments) => {
     return path.posix.resolve(ppath.cwd(), ...segments);
   }
 };
-const contains = function (pathUtils, from, to) {
+const contains = function(pathUtils, from, to) {
   from = pathUtils.normalize(from);
   to = pathUtils.normalize(to);
   if (from === to)
@@ -78,7 +78,7 @@ async function copyPromise(destinationFs, destination, sourceFs, source, opts) {
   const prelayout = [];
   const postlayout = [];
   const { atime, mtime } = opts.stableTime ? { atime: defaultTime, mtime: defaultTime } : await sourceFs.lstatPromise(normalizedSource);
-  await destinationFs.mkdirpPromise(destinationFs.pathUtils.dirname(destination), { utimes: [ atime, mtime ] });
+  await destinationFs.mkdirpPromise(destinationFs.pathUtils.dirname(destination), { utimes: [atime, mtime] });
   const updateTime = typeof destinationFs.lutimesPromise === `function` ? destinationFs.lutimesPromise.bind(destinationFs) : destinationFs.utimesPromise.bind(destinationFs);
   await copyImpl(prelayout, postlayout, updateTime, destinationFs, normalizedDestination, sourceFs, normalizedSource, { ...opts, didParentExist: true });
   for (const operation of prelayout)
@@ -94,21 +94,25 @@ async function copyImpl(prelayout, postlayout, updateTime, destinationFs, destin
   const { atime, mtime } = opts.stableTime ? { atime: defaultTime, mtime: defaultTime } : sourceStat;
   let updated;
   switch (true) {
-    case sourceStat.isDirectory(): {
-      updated = await copyFolder(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
-    }
+    case sourceStat.isDirectory():
+      {
+        updated = await copyFolder(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
+      }
       break;
-    case sourceStat.isFile(): {
-      updated = await copyFile(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
-    }
+    case sourceStat.isFile():
+      {
+        updated = await copyFile(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
+      }
       break;
-    case sourceStat.isSymbolicLink(): {
-      updated = await copySymlink(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
-    }
+    case sourceStat.isSymbolicLink():
+      {
+        updated = await copySymlink(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts);
+      }
       break;
-    default: {
-      throw new Error(`Unsupported file type (${sourceStat.mode})`);
-    }
+    default:
+      {
+        throw new Error(`Unsupported file type (${sourceStat.mode})`);
+      }
   }
   if (updated || ((_a = destinationStat == null ? void 0 : destinationStat.mtime) == null ? void 0 : _a.getTime()) !== mtime.getTime() || ((_b = destinationStat == null ? void 0 : destinationStat.atime) == null ? void 0 : _b.getTime()) !== atime.getTime()) {
     postlayout.push(() => updateTime(destination, atime, mtime));
@@ -242,9 +246,8 @@ class FakeFS {
   constructor(pathUtils) {
     this.pathUtils = pathUtils;
   }
-
-  async* genTraversePromise(init, { stableSort = false } = {}) {
-    const stack = [ init ];
+  async *genTraversePromise(init, { stableSort = false } = {}) {
+    const stack = [init];
     while (stack.length > 0) {
       const p = stack.shift();
       const entry = await this.lstatPromise(p);
@@ -498,7 +501,7 @@ class FakeFS {
     const isAlive = async () => {
       let pid;
       try {
-        [ pid ] = await this.readJsonPromise(lockPath);
+        [pid] = await this.readJsonPromise(lockPath);
       } catch (error) {
         return Date.now() - startTime < 500;
       }
@@ -531,7 +534,7 @@ class FakeFS {
         }
       }
     }
-    await this.writePromise(fd, JSON.stringify([ process.pid ]));
+    await this.writePromise(fd, JSON.stringify([process.pid]));
     try {
       return await callback();
     } finally {
@@ -976,16 +979,16 @@ class NodeFS extends BasePortableFakeFS {
   }
   watch(p, a, b) {
     return this.realFs.watch(
-          npath.fromPortablePath(p),
-          a,
-          b
+      npath.fromPortablePath(p),
+      a,
+      b
     );
   }
   watchFile(p, a, b) {
     return this.realFs.watchFile(
-          npath.fromPortablePath(p),
-          a,
-          b
+      npath.fromPortablePath(p),
+      a,
+      b
     );
   }
   unwatchFile(p, cb) {
@@ -1226,16 +1229,16 @@ class ProxiedFS extends FakeFS {
   }
   watch(p, a, b) {
     return this.baseFs.watch(
-          this.mapToBase(p),
-          a,
-          b
+      this.mapToBase(p),
+      a,
+      b
     );
   }
   watchFile(p, a, b) {
     return this.baseFs.watchFile(
-          this.mapToBase(p),
-          a,
-          b
+      this.mapToBase(p),
+      a,
+      b
     );
   }
   unwatchFile(p, cb) {
@@ -1325,7 +1328,7 @@ class VirtualFS extends ProxiedFS {
   }
 }
 
-const [ major, minor ] = process.versions.node.split(`.`).map((value) => parseInt(value, 10));
+const [major, minor] = process.versions.node.split(`.`).map((value) => parseInt(value, 10));
 const HAS_CONSOLIDATED_HOOKS = major > 16 || major === 16 && minor >= 12;
 const HAS_UNFLAGGED_JSON_MODULES = major > 17 || major === 17 && minor >= 5 || major === 16 && minor >= 15;
 const HAS_JSON_IMPORT_ASSERTION_REQUIREMENT = major > 17 || major === 17 && minor >= 1 || major === 16 && minor > 14;
@@ -1391,14 +1394,14 @@ function getFileFormat(filepath) {
     }
     case `.wasm`: {
       throw new Error(
-            `Unknown file extension ".wasm" for ${filepath}`
+        `Unknown file extension ".wasm" for ${filepath}`
       );
     }
     case `.json`: {
       if (HAS_UNFLAGGED_JSON_MODULES)
         return `json`;
       throw new Error(
-            `Unknown file extension ".json" for ${filepath}`
+        `Unknown file extension ".json" for ${filepath}`
       );
     }
     case `.js`: {
@@ -1458,12 +1461,12 @@ async function load$1(urlString, context, nextLoad) {
   }
   if (process.env.WATCH_REPORT_DEPENDENCIES && process.send) {
     const pathToSend = pathToFileURL(
-          npath.fromPortablePath(
-                VirtualFS.resolveVirtual(npath.toPortablePath(filePath))
-          )
+      npath.fromPortablePath(
+        VirtualFS.resolveVirtual(npath.toPortablePath(filePath))
+      )
     ).href;
     process.send({
-      "watch:import": WATCH_MODE_MESSAGE_USES_ARRAYS ? [ pathToSend ] : pathToSend
+      "watch:import": WATCH_MODE_MESSAGE_USES_ARRAYS ? [pathToSend] : pathToSend
     });
   }
   return {
@@ -1499,39 +1502,39 @@ function createErrorType(code, messageCreator, errorType) {
   };
 }
 const ERR_PACKAGE_IMPORT_NOT_DEFINED = createErrorType(
-      `ERR_PACKAGE_IMPORT_NOT_DEFINED`,
-      (specifier, packagePath, base) => {
-        return `Package import specifier "${specifier}" is not defined${packagePath ? ` in package ${packagePath}package.json` : ``} imported from ${base}`;
-      },
-      TypeError
+  `ERR_PACKAGE_IMPORT_NOT_DEFINED`,
+  (specifier, packagePath, base) => {
+    return `Package import specifier "${specifier}" is not defined${packagePath ? ` in package ${packagePath}package.json` : ``} imported from ${base}`;
+  },
+  TypeError
 );
 const ERR_INVALID_MODULE_SPECIFIER = createErrorType(
-      `ERR_INVALID_MODULE_SPECIFIER`,
-      (request, reason, base = void 0) => {
-        return `Invalid module "${request}" ${reason}${base ? ` imported from ${base}` : ``}`;
-      },
-      TypeError
+  `ERR_INVALID_MODULE_SPECIFIER`,
+  (request, reason, base = void 0) => {
+    return `Invalid module "${request}" ${reason}${base ? ` imported from ${base}` : ``}`;
+  },
+  TypeError
 );
 const ERR_INVALID_PACKAGE_TARGET = createErrorType(
-      `ERR_INVALID_PACKAGE_TARGET`,
-      (pkgPath, key, target, isImport = false, base = void 0) => {
-        const relError = typeof target === `string` && !isImport && target.length && !StringPrototypeStartsWith(target, `./`);
-        if (key === `.`) {
-          assert(isImport === false);
-          return `Invalid "exports" main target ${JSONStringify(target)} defined in the package config ${pkgPath}package.json${base ? ` imported from ${base}` : ``}${relError ? `; targets must start with "./"` : ``}`;
-        }
-        return `Invalid "${isImport ? `imports` : `exports`}" target ${JSONStringify(
-              target
-        )} defined for '${key}' in the package config ${pkgPath}package.json${base ? ` imported from ${base}` : ``}${relError ? `; targets must start with "./"` : ``}`;
-      },
-      Error
+  `ERR_INVALID_PACKAGE_TARGET`,
+  (pkgPath, key, target, isImport = false, base = void 0) => {
+    const relError = typeof target === `string` && !isImport && target.length && !StringPrototypeStartsWith(target, `./`);
+    if (key === `.`) {
+      assert(isImport === false);
+      return `Invalid "exports" main target ${JSONStringify(target)} defined in the package config ${pkgPath}package.json${base ? ` imported from ${base}` : ``}${relError ? `; targets must start with "./"` : ``}`;
+    }
+    return `Invalid "${isImport ? `imports` : `exports`}" target ${JSONStringify(
+      target
+    )} defined for '${key}' in the package config ${pkgPath}package.json${base ? ` imported from ${base}` : ``}${relError ? `; targets must start with "./"` : ``}`;
+  },
+  Error
 );
 const ERR_INVALID_PACKAGE_CONFIG = createErrorType(
-      `ERR_INVALID_PACKAGE_CONFIG`,
-      (path, base, message) => {
-        return `Invalid package config ${path}${base ? ` while importing ${base}` : ``}${message ? `. ${message}` : ``}`;
-      },
-      Error
+  `ERR_INVALID_PACKAGE_CONFIG`,
+  (path, base, message) => {
+    return `Invalid package config ${path}${base ? ` while importing ${base}` : ``}${message ? `. ${message}` : ``}`;
+  },
+  Error
 );
 
 function filterOwnProperties(source, keys) {
@@ -1570,9 +1573,9 @@ function getPackageConfig(path, specifier, base, readFileSyncFn) {
     packageJSON = JSONParse(source);
   } catch (error) {
     throw new ERR_INVALID_PACKAGE_CONFIG(
-          path,
-          (base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
-          error.message
+      path,
+      (base ? `"${specifier}" from ` : "") + fileURLToPath(base || specifier),
+      error.message
     );
   }
   let { imports, main, name, type } = filterOwnProperties(packageJSON, [
@@ -1614,10 +1617,10 @@ function getPackageScopeConfig(resolved, readFileSyncFn) {
       break;
     }
     const packageConfig2 = getPackageConfig(
-          fileURLToPath(packageJSONUrl),
-          resolved,
-          void 0,
-          readFileSyncFn
+      fileURLToPath(packageJSONUrl),
+      resolved,
+      void 0,
+      readFileSyncFn
     );
     if (packageConfig2.exists) {
       return packageConfig2;
@@ -1643,40 +1646,40 @@ function getPackageScopeConfig(resolved, readFileSyncFn) {
 }
 
 /**
- @license
- Copyright Node.js contributors. All rights reserved.
+  @license
+  Copyright Node.js contributors. All rights reserved.
 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to
- deal in the Software without restriction, including without limitation the
- rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- sell copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
- The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
- IN THE SOFTWARE.
- */
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+*/
 function throwImportNotDefined(specifier, packageJSONUrl, base) {
   throw new ERR_PACKAGE_IMPORT_NOT_DEFINED(
-        specifier,
-        packageJSONUrl && fileURLToPath(new URL(".", packageJSONUrl)),
-        fileURLToPath(base)
+    specifier,
+    packageJSONUrl && fileURLToPath(new URL(".", packageJSONUrl)),
+    fileURLToPath(base)
   );
 }
 function throwInvalidSubpath(subpath, packageJSONUrl, internal, base) {
   const reason = `request is not a valid subpath for the "${internal ? "imports" : "exports"}" resolution of ${fileURLToPath(packageJSONUrl)}`;
   throw new ERR_INVALID_MODULE_SPECIFIER(
-        subpath,
-        reason,
-        base && fileURLToPath(base)
+    subpath,
+    reason,
+    base && fileURLToPath(base)
   );
 }
 function throwInvalidPackageTarget(subpath, target, packageJSONUrl, internal, base) {
@@ -1686,11 +1689,11 @@ function throwInvalidPackageTarget(subpath, target, packageJSONUrl, internal, ba
     target = `${target}`;
   }
   throw new ERR_INVALID_PACKAGE_TARGET(
-        fileURLToPath(new URL(".", packageJSONUrl)),
-        subpath,
-        target,
-        internal,
-        base && fileURLToPath(base)
+    fileURLToPath(new URL(".", packageJSONUrl)),
+    subpath,
+    target,
+    internal,
+    base && fileURLToPath(base)
   );
 }
 const invalidSegmentRegEx = /(^|\\|\/)((\.|%2e)(\.|%2e)?|(n|%6e|%4e)(o|%6f|%4f)(d|%64|%44)(e|%65|%45)(_|%5f)(m|%6d|%4d)(o|%6f|%4f)(d|%64|%44)(u|%75|%55)(l|%6c|%4c)(e|%65|%45)(s|%73|%53))(\\|\/|$)/i;
@@ -1714,8 +1717,8 @@ function resolvePackageTargetString(target, subpath, match, packageJSONUrl, base
     throwInvalidPackageTarget(match, target, packageJSONUrl, internal, base);
   }
   if (RegExpPrototypeExec(
-        invalidSegmentRegEx,
-        StringPrototypeSlice(target, 2)
+    invalidSegmentRegEx,
+    StringPrototypeSlice(target, 2)
   ) !== null)
     throwInvalidPackageTarget(match, target, packageJSONUrl, internal, base);
   const resolved = new URL(target, packageJSONUrl);
@@ -1731,7 +1734,7 @@ function resolvePackageTargetString(target, subpath, match, packageJSONUrl, base
   }
   if (pattern) {
     return new URL(
-          RegExpPrototypeSymbolReplace(patternRegEx, resolved.href, () => subpath)
+      RegExpPrototypeSymbolReplace(patternRegEx, resolved.href, () => subpath)
     );
   }
   return new URL(subpath, resolved);
@@ -1745,13 +1748,13 @@ function isArrayIndex(key) {
 function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, base, pattern, internal, conditions) {
   if (typeof target === "string") {
     return resolvePackageTargetString(
-          target,
-          subpath,
-          packageSubpath,
-          packageJSONUrl,
-          base,
-          pattern,
-          internal);
+      target,
+      subpath,
+      packageSubpath,
+      packageJSONUrl,
+      base,
+      pattern,
+      internal);
   } else if (ArrayIsArray(target)) {
     if (target.length === 0) {
       return null;
@@ -1762,14 +1765,14 @@ function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, b
       let resolveResult;
       try {
         resolveResult = resolvePackageTarget(
-              packageJSONUrl,
-              targetItem,
-              subpath,
-              packageSubpath,
-              base,
-              pattern,
-              internal,
-              conditions
+          packageJSONUrl,
+          targetItem,
+          subpath,
+          packageSubpath,
+          base,
+          pattern,
+          internal,
+          conditions
         );
       } catch (e) {
         lastException = e;
@@ -1796,9 +1799,9 @@ function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, b
       const key = keys[i];
       if (isArrayIndex(key)) {
         throw new ERR_INVALID_PACKAGE_CONFIG(
-              fileURLToPath(packageJSONUrl),
-              base,
-              '"exports" cannot contain numeric property keys.'
+          fileURLToPath(packageJSONUrl),
+          base,
+          '"exports" cannot contain numeric property keys.'
         );
       }
     }
@@ -1807,14 +1810,14 @@ function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, b
       if (key === "default" || conditions.has(key)) {
         const conditionalTarget = target[key];
         const resolveResult = resolvePackageTarget(
-              packageJSONUrl,
-              conditionalTarget,
-              subpath,
-              packageSubpath,
-              base,
-              pattern,
-              internal,
-              conditions
+          packageJSONUrl,
+          conditionalTarget,
+          subpath,
+          packageSubpath,
+          base,
+          pattern,
+          internal,
+          conditions
         );
         if (resolveResult === void 0)
           continue;
@@ -1826,11 +1829,11 @@ function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, b
     return null;
   }
   throwInvalidPackageTarget(
-        packageSubpath,
-        target,
-        packageJSONUrl,
-        internal,
-        base
+    packageSubpath,
+    target,
+    packageJSONUrl,
+    internal,
+    base
   );
 }
 function patternKeyCompare(a, b) {
@@ -1865,14 +1868,14 @@ function packageImportsResolve({ name, base, conditions, readFileSyncFn }) {
     if (imports) {
       if (ObjectPrototypeHasOwnProperty(imports, name) && !StringPrototypeIncludes(name, "*")) {
         const resolveResult = resolvePackageTarget(
-              packageJSONUrl,
-              imports[name],
-              "",
-              name,
-              base,
-              false,
-              true,
-              conditions
+          packageJSONUrl,
+          imports[name],
+          "",
+          name,
+          base,
+          false,
+          true,
+          conditions
         );
         if (resolveResult != null) {
           return resolveResult;
@@ -1885,16 +1888,16 @@ function packageImportsResolve({ name, base, conditions, readFileSyncFn }) {
           const key = keys[i];
           const patternIndex = StringPrototypeIndexOf(key, "*");
           if (patternIndex !== -1 && StringPrototypeStartsWith(
-                name,
-                StringPrototypeSlice(key, 0, patternIndex)
+            name,
+            StringPrototypeSlice(key, 0, patternIndex)
           )) {
             const patternTrailer = StringPrototypeSlice(key, patternIndex + 1);
             if (name.length >= key.length && StringPrototypeEndsWith(name, patternTrailer) && patternKeyCompare(bestMatch, key) === 1 && StringPrototypeLastIndexOf(key, "*") === patternIndex) {
               bestMatch = key;
               bestMatchSubpath = StringPrototypeSlice(
-                    name,
-                    patternIndex,
-                    name.length - patternTrailer.length
+                name,
+                patternIndex,
+                name.length - patternTrailer.length
               );
             }
           }
@@ -1902,14 +1905,14 @@ function packageImportsResolve({ name, base, conditions, readFileSyncFn }) {
         if (bestMatch) {
           const target = imports[bestMatch];
           const resolveResult = resolvePackageTarget(
-                packageJSONUrl,
-                target,
-                bestMatchSubpath,
-                bestMatch,
-                base,
-                true,
-                true,
-                conditions
+            packageJSONUrl,
+            target,
+            bestMatchSubpath,
+            bestMatch,
+            base,
+            true,
+            true,
+            conditions
           );
           if (resolveResult != null) {
             return resolveResult;
@@ -1969,7 +1972,7 @@ async function resolve$1(originalSpecifier, context, nextResolve) {
   const dependencyNameMatch = specifier.match(pathRegExp);
   let allowLegacyResolve = false;
   if (dependencyNameMatch) {
-    const [ , dependencyName, subPath ] = dependencyNameMatch;
+    const [, dependencyName, subPath] = dependencyNameMatch;
     if (subPath === `` && dependencyName !== `pnpapi`) {
       const resolved = pnpapi.resolveToUnqualified(`${dependencyName}/package.json`, issuer);
       if (resolved) {
@@ -2012,8 +2015,8 @@ if (!HAS_LAZY_LOADED_TRANSLATORS) {
   const originalfstat = binding.fstat;
   const ZIP_MASK = 4278190080;
   const ZIP_MAGIC = 704643072;
-  binding.fstat = function (...args) {
-    const [ fd, useBigint, req ] = args;
+  binding.fstat = function(...args) {
+    const [fd, useBigint, req] = args;
     if ((fd & ZIP_MASK) === ZIP_MAGIC && useBigint === false && req === void 0) {
       try {
         const stats = fs.fstatSync(fd);

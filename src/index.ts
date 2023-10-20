@@ -1,8 +1,12 @@
+import { startExpress } from "./express";
+
 async function main() {
-  console.log("World");
-  console.log(await fetch("https://nav.lv").then(v => v.text()));
+  await startExpress();
 }
 
-main()
-      .catch(console.error);
-console.log("Hello");
+if (require.main === module) {
+  main().catch(e => {
+    console.error(e);
+    process.exit(1);
+  });
+}
