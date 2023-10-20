@@ -44,7 +44,6 @@ const WINDOWS_PATH_REGEXP = /^([a-zA-Z]:.*)$/;
 const UNC_WINDOWS_PATH_REGEXP = /^\/\/(\.\/)?(.*)$/;
 const PORTABLE_PATH_REGEXP = /^\/([a-zA-Z]:.*)$/;
 const UNC_PORTABLE_PATH_REGEXP = /^\/unc\/(\.dot\/)?(.*)$/;
-
 function fromPortablePath(p) {
   if (process.platform !== `win32`)
     return p;
@@ -57,7 +56,6 @@ function fromPortablePath(p) {
     return p;
   return p.replace(/\//g, `\\`);
 }
-
 function toPortablePath(p) {
   if (process.platform !== `win32`)
     return p;
@@ -69,13 +67,11 @@ function toPortablePath(p) {
     p = `/unc/${uncWindowsPathMatch[1] ? `.dot/` : ``}${uncWindowsPathMatch[2]}`;
   return p;
 }
-
 function convertPath(targetPathUtils, sourcePath) {
   return targetPathUtils === npath ? fromPortablePath(sourcePath) : toPortablePath(sourcePath);
 }
 
 const defaultTime = new Date(SAFE_TIME * 1e3);
-
 async function copyPromise(destinationFs, destination, sourceFs, source, opts) {
   const normalizedDestination = destinationFs.pathUtils.normalize(destination);
   const normalizedSource = sourceFs.pathUtils.normalize(source);
@@ -91,7 +87,6 @@ async function copyPromise(destinationFs, destination, sourceFs, source, opts) {
     return operation();
   }));
 }
-
 async function copyImpl(prelayout, postlayout, updateTime, destinationFs, destination, sourceFs, source, opts) {
   var _a, _b;
   const destinationStat = opts.didParentExist ? await maybeLStat(destinationFs, destination) : null;
@@ -125,7 +120,6 @@ async function copyImpl(prelayout, postlayout, updateTime, destinationFs, destin
   }
   return updated;
 }
-
 async function maybeLStat(baseFs, p) {
   try {
     return await baseFs.lstatPromise(p);
@@ -133,7 +127,6 @@ async function maybeLStat(baseFs, p) {
     return null;
   }
 }
-
 async function copyFolder(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts) {
   if (destinationStat !== null && !destinationStat.isDirectory()) {
     if (opts.overwrite) {
@@ -174,9 +167,7 @@ async function copyFolder(prelayout, postlayout, updateTime, destinationFs, dest
   }
   return updated;
 }
-
 const isCloneSupportedCache = /* @__PURE__ */ new WeakMap();
-
 function makeLinkOperation(opFs, destination, source, sourceStat, linkStrategy) {
   return async () => {
     await opFs.linkPromise(source, destination);
@@ -186,7 +177,6 @@ function makeLinkOperation(opFs, destination, source, sourceStat, linkStrategy) 
     }
   };
 }
-
 function makeCloneLinkOperation(opFs, destination, source, sourceStat, linkStrategy) {
   const isCloneSupported = isCloneSupportedCache.get(opFs);
   if (typeof isCloneSupported === `undefined`) {
@@ -211,7 +201,6 @@ function makeCloneLinkOperation(opFs, destination, source, sourceStat, linkStrat
     }
   }
 }
-
 async function copyFile(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts) {
   var _a;
   if (destinationStat !== null) {
@@ -227,7 +216,6 @@ async function copyFile(prelayout, postlayout, updateTime, destinationFs, destin
   prelayout.push(async () => op());
   return true;
 }
-
 async function copySymlink(prelayout, postlayout, updateTime, destinationFs, destination, destinationStat, sourceFs, source, sourceStat, opts) {
   if (destinationStat !== null) {
     if (opts.overwrite) {
@@ -246,7 +234,6 @@ async function copySymlink(prelayout, postlayout, updateTime, destinationFs, des
 function makeError(code, message) {
   return Object.assign(new Error(`${code}: ${message}`), { code });
 }
-
 function ENOSYS(message, reason) {
   return makeError(`ENOSYS`, `${message}, ${reason}`);
 }
@@ -275,7 +262,6 @@ class FakeFS {
       }
     }
   }
-
   async removePromise(p, { recursive = true, maxRetries = 5 } = {}) {
     let stat;
     try {
@@ -310,7 +296,6 @@ class FakeFS {
       await this.unlinkPromise(p);
     }
   }
-
   removeSync(p, { recursive = true } = {}) {
     let stat;
     try {
@@ -331,7 +316,6 @@ class FakeFS {
       this.unlinkSync(p);
     }
   }
-
   async mkdirpPromise(p, { chmod, utimes } = {}) {
     p = this.resolve(p);
     if (p === this.pathUtils.dirname(p))
@@ -363,7 +347,6 @@ class FakeFS {
     }
     return createdDirectory;
   }
-
   mkdirpSync(p, { chmod, utimes } = {}) {
     p = this.resolve(p);
     if (p === this.pathUtils.dirname(p))
@@ -395,11 +378,9 @@ class FakeFS {
     }
     return createdDirectory;
   }
-
   async copyPromise(destination, source, { baseFs = this, overwrite = true, stableSort = false, stableTime = false, linkStrategy = null } = {}) {
     return await copyPromise(this, destination, baseFs, source, { overwrite, stableSort, stableTime, linkStrategy });
   }
-
   copySync(destination, source, { baseFs = this, overwrite = true } = {}) {
     const stat = baseFs.lstatSync(source);
     const exists = this.existsSync(destination);
@@ -429,7 +410,6 @@ class FakeFS {
     const mode = stat.mode & 511;
     this.chmodSync(destination, mode);
   }
-
   async changeFilePromise(p, content, opts = {}) {
     if (Buffer.isBuffer(content)) {
       return this.changeFileBufferPromise(p, content, opts);
@@ -437,7 +417,6 @@ class FakeFS {
       return this.changeFileTextPromise(p, content, opts);
     }
   }
-
   async changeFileBufferPromise(p, content, { mode } = {}) {
     let current = Buffer.alloc(0);
     try {
@@ -448,7 +427,6 @@ class FakeFS {
       return;
     await this.writeFilePromise(p, content, { mode });
   }
-
   async changeFileTextPromise(p, content, { automaticNewlines, mode } = {}) {
     let current = ``;
     try {
@@ -460,7 +438,6 @@ class FakeFS {
       return;
     await this.writeFilePromise(p, normalizedContent, { mode });
   }
-
   changeFileSync(p, content, opts = {}) {
     if (Buffer.isBuffer(content)) {
       return this.changeFileBufferSync(p, content, opts);
@@ -468,7 +445,6 @@ class FakeFS {
       return this.changeFileTextSync(p, content, opts);
     }
   }
-
   changeFileBufferSync(p, content, { mode } = {}) {
     let current = Buffer.alloc(0);
     try {
@@ -479,7 +455,6 @@ class FakeFS {
       return;
     this.writeFileSync(p, content, { mode });
   }
-
   changeFileTextSync(p, content, { automaticNewlines = false, mode } = {}) {
     let current = ``;
     try {
@@ -491,7 +466,6 @@ class FakeFS {
       return;
     this.writeFileSync(p, normalizedContent, { mode });
   }
-
   async movePromise(fromP, toP) {
     try {
       await this.renamePromise(fromP, toP);
@@ -504,7 +478,6 @@ class FakeFS {
       }
     }
   }
-
   moveSync(fromP, toP) {
     try {
       this.renameSync(fromP, toP);
@@ -517,7 +490,6 @@ class FakeFS {
       }
     }
   }
-
   async lockPromise(affectedPath, callback) {
     const lockPath = `${affectedPath}.flock`;
     const interval = 1e3 / 60;
@@ -570,7 +542,6 @@ class FakeFS {
       }
     }
   }
-
   async readJsonPromise(p) {
     const content = await this.readFilePromise(p, `utf8`);
     try {
@@ -580,7 +551,6 @@ class FakeFS {
       throw error;
     }
   }
-
   readJsonSync(p) {
     const content = this.readFileSync(p, `utf8`);
     try {
@@ -590,17 +560,14 @@ class FakeFS {
       throw error;
     }
   }
-
   async writeJsonPromise(p, data) {
     return await this.writeFilePromise(p, `${JSON.stringify(data, null, 2)}
 `);
   }
-
   writeJsonSync(p, data) {
     return this.writeFileSync(p, `${JSON.stringify(data, null, 2)}
 `);
   }
-
   async preserveTimePromise(p, cb) {
     const stat = await this.lstatPromise(p);
     const result = await cb();
@@ -612,7 +579,6 @@ class FakeFS {
       await this.utimesPromise(p, stat.atime, stat.mtime);
     }
   }
-
   async preserveTimeSync(p, cb) {
     const stat = this.lstatSync(p);
     const result = cb();
@@ -625,13 +591,11 @@ class FakeFS {
     }
   }
 }
-
 class BasePortableFakeFS extends FakeFS {
   constructor() {
     super(ppath);
   }
 }
-
 function getEndOfLine(content) {
   const matches = content.match(/\r?\n/g);
   if (matches === null)
@@ -643,7 +607,6 @@ function getEndOfLine(content) {
 ` : `
 `;
 }
-
 function normalizeLineEndings(originalContent, newContent) {
   return newContent.replace(/\r?\n/g, getEndOfLine(originalContent));
 }
@@ -657,29 +620,23 @@ class NodeFS extends BasePortableFakeFS {
       this.lutimesSync = this.lutimesSyncImpl;
     }
   }
-
   getExtractHint() {
     return false;
   }
-
   getRealPath() {
     return PortablePath.root;
   }
-
   resolve(p) {
     return ppath.resolve(p);
   }
-
   async openPromise(p, flags, mode) {
     return await new Promise((resolve, reject) => {
       this.realFs.open(npath.fromPortablePath(p), flags, mode, this.makeCallback(resolve, reject));
     });
   }
-
   openSync(p, flags, mode) {
     return this.realFs.openSync(npath.fromPortablePath(p), flags, mode);
   }
-
   async opendirPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       if (typeof opts !== `undefined`) {
@@ -691,12 +648,10 @@ class NodeFS extends BasePortableFakeFS {
       return Object.defineProperty(dir, `path`, { value: p, configurable: true, writable: true });
     });
   }
-
   opendirSync(p, opts) {
     const dir = typeof opts !== `undefined` ? this.realFs.opendirSync(npath.fromPortablePath(p), opts) : this.realFs.opendirSync(npath.fromPortablePath(p));
     return Object.defineProperty(dir, `path`, { value: p, configurable: true, writable: true });
   }
-
   async readPromise(fd, buffer, offset = 0, length = 0, position = -1) {
     return await new Promise((resolve, reject) => {
       this.realFs.read(fd, buffer, offset, length, position, (error, bytesRead) => {
@@ -708,11 +663,9 @@ class NodeFS extends BasePortableFakeFS {
       });
     });
   }
-
   readSync(fd, buffer, offset, length, position) {
     return this.realFs.readSync(fd, buffer, offset, length, position);
   }
-
   async writePromise(fd, buffer, offset, length, position) {
     return await new Promise((resolve, reject) => {
       if (typeof buffer === `string`) {
@@ -722,7 +675,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   writeSync(fd, buffer, offset, length, position) {
     if (typeof buffer === `string`) {
       return this.realFs.writeSync(fd, buffer, offset);
@@ -730,27 +682,22 @@ class NodeFS extends BasePortableFakeFS {
       return this.realFs.writeSync(fd, buffer, offset, length, position);
     }
   }
-
   async closePromise(fd) {
     await new Promise((resolve, reject) => {
       this.realFs.close(fd, this.makeCallback(resolve, reject));
     });
   }
-
   closeSync(fd) {
     this.realFs.closeSync(fd);
   }
-
   createReadStream(p, opts) {
     const realPath = p !== null ? npath.fromPortablePath(p) : p;
     return this.realFs.createReadStream(realPath, opts);
   }
-
   createWriteStream(p, opts) {
     const realPath = p !== null ? npath.fromPortablePath(p) : p;
     return this.realFs.createWriteStream(realPath, opts);
   }
-
   async realpathPromise(p) {
     return await new Promise((resolve, reject) => {
       this.realFs.realpath(npath.fromPortablePath(p), {}, this.makeCallback(resolve, reject));
@@ -758,31 +705,25 @@ class NodeFS extends BasePortableFakeFS {
       return npath.toPortablePath(path);
     });
   }
-
   realpathSync(p) {
     return npath.toPortablePath(this.realFs.realpathSync(npath.fromPortablePath(p), {}));
   }
-
   async existsPromise(p) {
     return await new Promise((resolve) => {
       this.realFs.exists(npath.fromPortablePath(p), resolve);
     });
   }
-
   accessSync(p, mode) {
     return this.realFs.accessSync(npath.fromPortablePath(p), mode);
   }
-
   async accessPromise(p, mode) {
     return await new Promise((resolve, reject) => {
       this.realFs.access(npath.fromPortablePath(p), mode, this.makeCallback(resolve, reject));
     });
   }
-
   existsSync(p) {
     return this.realFs.existsSync(npath.fromPortablePath(p));
   }
-
   async statPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       if (opts) {
@@ -792,7 +733,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   statSync(p, opts) {
     if (opts) {
       return this.realFs.statSync(npath.fromPortablePath(p), opts);
@@ -800,7 +740,6 @@ class NodeFS extends BasePortableFakeFS {
       return this.realFs.statSync(npath.fromPortablePath(p));
     }
   }
-
   async fstatPromise(fd, opts) {
     return await new Promise((resolve, reject) => {
       if (opts) {
@@ -810,7 +749,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   fstatSync(fd, opts) {
     if (opts) {
       return this.realFs.fstatSync(fd, opts);
@@ -818,7 +756,6 @@ class NodeFS extends BasePortableFakeFS {
       return this.realFs.fstatSync(fd);
     }
   }
-
   async lstatPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       if (opts) {
@@ -828,7 +765,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   lstatSync(p, opts) {
     if (opts) {
       return this.realFs.lstatSync(npath.fromPortablePath(p), opts);
@@ -836,67 +772,54 @@ class NodeFS extends BasePortableFakeFS {
       return this.realFs.lstatSync(npath.fromPortablePath(p));
     }
   }
-
   async fchmodPromise(fd, mask) {
     return await new Promise((resolve, reject) => {
       this.realFs.fchmod(fd, mask, this.makeCallback(resolve, reject));
     });
   }
-
   fchmodSync(fd, mask) {
     return this.realFs.fchmodSync(fd, mask);
   }
-
   async chmodPromise(p, mask) {
     return await new Promise((resolve, reject) => {
       this.realFs.chmod(npath.fromPortablePath(p), mask, this.makeCallback(resolve, reject));
     });
   }
-
   chmodSync(p, mask) {
     return this.realFs.chmodSync(npath.fromPortablePath(p), mask);
   }
-
   async fchownPromise(fd, uid, gid) {
     return await new Promise((resolve, reject) => {
       this.realFs.fchown(fd, uid, gid, this.makeCallback(resolve, reject));
     });
   }
-
   fchownSync(fd, uid, gid) {
     return this.realFs.fchownSync(fd, uid, gid);
   }
-
   async chownPromise(p, uid, gid) {
     return await new Promise((resolve, reject) => {
       this.realFs.chown(npath.fromPortablePath(p), uid, gid, this.makeCallback(resolve, reject));
     });
   }
-
   chownSync(p, uid, gid) {
     return this.realFs.chownSync(npath.fromPortablePath(p), uid, gid);
   }
-
   async renamePromise(oldP, newP) {
     return await new Promise((resolve, reject) => {
       this.realFs.rename(npath.fromPortablePath(oldP), npath.fromPortablePath(newP), this.makeCallback(resolve, reject));
     });
   }
-
   renameSync(oldP, newP) {
     return this.realFs.renameSync(npath.fromPortablePath(oldP), npath.fromPortablePath(newP));
   }
-
   async copyFilePromise(sourceP, destP, flags = 0) {
     return await new Promise((resolve, reject) => {
       this.realFs.copyFile(npath.fromPortablePath(sourceP), npath.fromPortablePath(destP), flags, this.makeCallback(resolve, reject));
     });
   }
-
   copyFileSync(sourceP, destP, flags = 0) {
     return this.realFs.copyFileSync(npath.fromPortablePath(sourceP), npath.fromPortablePath(destP), flags);
   }
-
   async appendFilePromise(p, content, opts) {
     return await new Promise((resolve, reject) => {
       const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
@@ -907,7 +830,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   appendFileSync(p, content, opts) {
     const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
     if (opts) {
@@ -916,7 +838,6 @@ class NodeFS extends BasePortableFakeFS {
       this.realFs.appendFileSync(fsNativePath, content);
     }
   }
-
   async writeFilePromise(p, content, opts) {
     return await new Promise((resolve, reject) => {
       const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
@@ -927,7 +848,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   writeFileSync(p, content, opts) {
     const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
     if (opts) {
@@ -936,27 +856,22 @@ class NodeFS extends BasePortableFakeFS {
       this.realFs.writeFileSync(fsNativePath, content);
     }
   }
-
   async unlinkPromise(p) {
     return await new Promise((resolve, reject) => {
       this.realFs.unlink(npath.fromPortablePath(p), this.makeCallback(resolve, reject));
     });
   }
-
   unlinkSync(p) {
     return this.realFs.unlinkSync(npath.fromPortablePath(p));
   }
-
   async utimesPromise(p, atime, mtime) {
     return await new Promise((resolve, reject) => {
       this.realFs.utimes(npath.fromPortablePath(p), atime, mtime, this.makeCallback(resolve, reject));
     });
   }
-
   utimesSync(p, atime, mtime) {
     this.realFs.utimesSync(npath.fromPortablePath(p), atime, mtime);
   }
-
   async lutimesPromiseImpl(p, atime, mtime) {
     const lutimes = this.realFs.lutimes;
     if (typeof lutimes === `undefined`)
@@ -965,24 +880,20 @@ class NodeFS extends BasePortableFakeFS {
       lutimes.call(this.realFs, npath.fromPortablePath(p), atime, mtime, this.makeCallback(resolve, reject));
     });
   }
-
   lutimesSyncImpl(p, atime, mtime) {
     const lutimesSync = this.realFs.lutimesSync;
     if (typeof lutimesSync === `undefined`)
       throw ENOSYS(`unavailable Node binding`, `lutimes '${p}'`);
     lutimesSync.call(this.realFs, npath.fromPortablePath(p), atime, mtime);
   }
-
   async mkdirPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       this.realFs.mkdir(npath.fromPortablePath(p), opts, this.makeCallback(resolve, reject));
     });
   }
-
   mkdirSync(p, opts) {
     return this.realFs.mkdirSync(npath.fromPortablePath(p), opts);
   }
-
   async rmdirPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       if (opts) {
@@ -992,43 +903,35 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   rmdirSync(p, opts) {
     return this.realFs.rmdirSync(npath.fromPortablePath(p), opts);
   }
-
   async linkPromise(existingP, newP) {
     return await new Promise((resolve, reject) => {
       this.realFs.link(npath.fromPortablePath(existingP), npath.fromPortablePath(newP), this.makeCallback(resolve, reject));
     });
   }
-
   linkSync(existingP, newP) {
     return this.realFs.linkSync(npath.fromPortablePath(existingP), npath.fromPortablePath(newP));
   }
-
   async symlinkPromise(target, p, type) {
     return await new Promise((resolve, reject) => {
       this.realFs.symlink(npath.fromPortablePath(target.replace(/\/+$/, ``)), npath.fromPortablePath(p), type, this.makeCallback(resolve, reject));
     });
   }
-
   symlinkSync(target, p, type) {
     return this.realFs.symlinkSync(npath.fromPortablePath(target.replace(/\/+$/, ``)), npath.fromPortablePath(p), type);
   }
-
   async readFilePromise(p, encoding) {
     return await new Promise((resolve, reject) => {
       const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
       this.realFs.readFile(fsNativePath, encoding, this.makeCallback(resolve, reject));
     });
   }
-
   readFileSync(p, encoding) {
     const fsNativePath = typeof p === `string` ? npath.fromPortablePath(p) : p;
     return this.realFs.readFileSync(fsNativePath, encoding);
   }
-
   async readdirPromise(p, opts) {
     return await new Promise((resolve, reject) => {
       if (opts == null ? void 0 : opts.withFileTypes) {
@@ -1038,7 +941,6 @@ class NodeFS extends BasePortableFakeFS {
       }
     });
   }
-
   readdirSync(p, opts) {
     if (opts == null ? void 0 : opts.withFileTypes) {
       return this.realFs.readdirSync(npath.fromPortablePath(p), { withFileTypes: true });
@@ -1046,7 +948,6 @@ class NodeFS extends BasePortableFakeFS {
       return this.realFs.readdirSync(npath.fromPortablePath(p));
     }
   }
-
   async readlinkPromise(p) {
     return await new Promise((resolve, reject) => {
       this.realFs.readlink(npath.fromPortablePath(p), this.makeCallback(resolve, reject));
@@ -1054,31 +955,25 @@ class NodeFS extends BasePortableFakeFS {
       return npath.toPortablePath(path);
     });
   }
-
   readlinkSync(p) {
     return npath.toPortablePath(this.realFs.readlinkSync(npath.fromPortablePath(p)));
   }
-
   async truncatePromise(p, len) {
     return await new Promise((resolve, reject) => {
       this.realFs.truncate(npath.fromPortablePath(p), len, this.makeCallback(resolve, reject));
     });
   }
-
   truncateSync(p, len) {
     return this.realFs.truncateSync(npath.fromPortablePath(p), len);
   }
-
   async ftruncatePromise(fd, len) {
     return await new Promise((resolve, reject) => {
       this.realFs.ftruncate(fd, len, this.makeCallback(resolve, reject));
     });
   }
-
   ftruncateSync(fd, len) {
     return this.realFs.ftruncateSync(fd, len);
   }
-
   watch(p, a, b) {
     return this.realFs.watch(
           npath.fromPortablePath(p),
@@ -1086,7 +981,6 @@ class NodeFS extends BasePortableFakeFS {
           b
     );
   }
-
   watchFile(p, a, b) {
     return this.realFs.watchFile(
           npath.fromPortablePath(p),
@@ -1094,11 +988,9 @@ class NodeFS extends BasePortableFakeFS {
           b
     );
   }
-
   unwatchFile(p, cb) {
     return this.realFs.unwatchFile(npath.fromPortablePath(p), cb);
   }
-
   makeCallback(resolve, reject) {
     return (err, result) => {
       if (err) {
@@ -1114,39 +1006,30 @@ class ProxiedFS extends FakeFS {
   getExtractHint(hints) {
     return this.baseFs.getExtractHint(hints);
   }
-
   resolve(path) {
     return this.mapFromBase(this.baseFs.resolve(this.mapToBase(path)));
   }
-
   getRealPath() {
     return this.mapFromBase(this.baseFs.getRealPath());
   }
-
   async openPromise(p, flags, mode) {
     return this.baseFs.openPromise(this.mapToBase(p), flags, mode);
   }
-
   openSync(p, flags, mode) {
     return this.baseFs.openSync(this.mapToBase(p), flags, mode);
   }
-
   async opendirPromise(p, opts) {
     return Object.assign(await this.baseFs.opendirPromise(this.mapToBase(p), opts), { path: p });
   }
-
   opendirSync(p, opts) {
     return Object.assign(this.baseFs.opendirSync(this.mapToBase(p), opts), { path: p });
   }
-
   async readPromise(fd, buffer, offset, length, position) {
     return await this.baseFs.readPromise(fd, buffer, offset, length, position);
   }
-
   readSync(fd, buffer, offset, length, position) {
     return this.baseFs.readSync(fd, buffer, offset, length, position);
   }
-
   async writePromise(fd, buffer, offset, length, position) {
     if (typeof buffer === `string`) {
       return await this.baseFs.writePromise(fd, buffer, offset);
@@ -1154,7 +1037,6 @@ class ProxiedFS extends FakeFS {
       return await this.baseFs.writePromise(fd, buffer, offset, length, position);
     }
   }
-
   writeSync(fd, buffer, offset, length, position) {
     if (typeof buffer === `string`) {
       return this.baseFs.writeSync(fd, buffer, offset);
@@ -1162,175 +1044,132 @@ class ProxiedFS extends FakeFS {
       return this.baseFs.writeSync(fd, buffer, offset, length, position);
     }
   }
-
   async closePromise(fd) {
     return this.baseFs.closePromise(fd);
   }
-
   closeSync(fd) {
     this.baseFs.closeSync(fd);
   }
-
   createReadStream(p, opts) {
     return this.baseFs.createReadStream(p !== null ? this.mapToBase(p) : p, opts);
   }
-
   createWriteStream(p, opts) {
     return this.baseFs.createWriteStream(p !== null ? this.mapToBase(p) : p, opts);
   }
-
   async realpathPromise(p) {
     return this.mapFromBase(await this.baseFs.realpathPromise(this.mapToBase(p)));
   }
-
   realpathSync(p) {
     return this.mapFromBase(this.baseFs.realpathSync(this.mapToBase(p)));
   }
-
   async existsPromise(p) {
     return this.baseFs.existsPromise(this.mapToBase(p));
   }
-
   existsSync(p) {
     return this.baseFs.existsSync(this.mapToBase(p));
   }
-
   accessSync(p, mode) {
     return this.baseFs.accessSync(this.mapToBase(p), mode);
   }
-
   async accessPromise(p, mode) {
     return this.baseFs.accessPromise(this.mapToBase(p), mode);
   }
-
   async statPromise(p, opts) {
     return this.baseFs.statPromise(this.mapToBase(p), opts);
   }
-
   statSync(p, opts) {
     return this.baseFs.statSync(this.mapToBase(p), opts);
   }
-
   async fstatPromise(fd, opts) {
     return this.baseFs.fstatPromise(fd, opts);
   }
-
   fstatSync(fd, opts) {
     return this.baseFs.fstatSync(fd, opts);
   }
-
   lstatPromise(p, opts) {
     return this.baseFs.lstatPromise(this.mapToBase(p), opts);
   }
-
   lstatSync(p, opts) {
     return this.baseFs.lstatSync(this.mapToBase(p), opts);
   }
-
   async fchmodPromise(fd, mask) {
     return this.baseFs.fchmodPromise(fd, mask);
   }
-
   fchmodSync(fd, mask) {
     return this.baseFs.fchmodSync(fd, mask);
   }
-
   async chmodPromise(p, mask) {
     return this.baseFs.chmodPromise(this.mapToBase(p), mask);
   }
-
   chmodSync(p, mask) {
     return this.baseFs.chmodSync(this.mapToBase(p), mask);
   }
-
   async fchownPromise(fd, uid, gid) {
     return this.baseFs.fchownPromise(fd, uid, gid);
   }
-
   fchownSync(fd, uid, gid) {
     return this.baseFs.fchownSync(fd, uid, gid);
   }
-
   async chownPromise(p, uid, gid) {
     return this.baseFs.chownPromise(this.mapToBase(p), uid, gid);
   }
-
   chownSync(p, uid, gid) {
     return this.baseFs.chownSync(this.mapToBase(p), uid, gid);
   }
-
   async renamePromise(oldP, newP) {
     return this.baseFs.renamePromise(this.mapToBase(oldP), this.mapToBase(newP));
   }
-
   renameSync(oldP, newP) {
     return this.baseFs.renameSync(this.mapToBase(oldP), this.mapToBase(newP));
   }
-
   async copyFilePromise(sourceP, destP, flags = 0) {
     return this.baseFs.copyFilePromise(this.mapToBase(sourceP), this.mapToBase(destP), flags);
   }
-
   copyFileSync(sourceP, destP, flags = 0) {
     return this.baseFs.copyFileSync(this.mapToBase(sourceP), this.mapToBase(destP), flags);
   }
-
   async appendFilePromise(p, content, opts) {
     return this.baseFs.appendFilePromise(this.fsMapToBase(p), content, opts);
   }
-
   appendFileSync(p, content, opts) {
     return this.baseFs.appendFileSync(this.fsMapToBase(p), content, opts);
   }
-
   async writeFilePromise(p, content, opts) {
     return this.baseFs.writeFilePromise(this.fsMapToBase(p), content, opts);
   }
-
   writeFileSync(p, content, opts) {
     return this.baseFs.writeFileSync(this.fsMapToBase(p), content, opts);
   }
-
   async unlinkPromise(p) {
     return this.baseFs.unlinkPromise(this.mapToBase(p));
   }
-
   unlinkSync(p) {
     return this.baseFs.unlinkSync(this.mapToBase(p));
   }
-
   async utimesPromise(p, atime, mtime) {
     return this.baseFs.utimesPromise(this.mapToBase(p), atime, mtime);
   }
-
   utimesSync(p, atime, mtime) {
     return this.baseFs.utimesSync(this.mapToBase(p), atime, mtime);
   }
-
   async mkdirPromise(p, opts) {
     return this.baseFs.mkdirPromise(this.mapToBase(p), opts);
   }
-
   mkdirSync(p, opts) {
     return this.baseFs.mkdirSync(this.mapToBase(p), opts);
   }
-
   async rmdirPromise(p, opts) {
     return this.baseFs.rmdirPromise(this.mapToBase(p), opts);
   }
-
   rmdirSync(p, opts) {
     return this.baseFs.rmdirSync(this.mapToBase(p), opts);
   }
-
   async linkPromise(existingP, newP) {
     return this.baseFs.linkPromise(this.mapToBase(existingP), this.mapToBase(newP));
   }
-
   linkSync(existingP, newP) {
     return this.baseFs.linkSync(this.mapToBase(existingP), this.mapToBase(newP));
   }
-
   async symlinkPromise(target, p, type) {
     const mappedP = this.mapToBase(p);
     if (this.pathUtils.isAbsolute(target))
@@ -1339,7 +1178,6 @@ class ProxiedFS extends FakeFS {
     const mappedTarget = this.baseFs.pathUtils.relative(this.baseFs.pathUtils.dirname(mappedP), mappedAbsoluteTarget);
     return this.baseFs.symlinkPromise(mappedTarget, mappedP, type);
   }
-
   symlinkSync(target, p, type) {
     const mappedP = this.mapToBase(p);
     if (this.pathUtils.isAbsolute(target))
@@ -1348,7 +1186,6 @@ class ProxiedFS extends FakeFS {
     const mappedTarget = this.baseFs.pathUtils.relative(this.baseFs.pathUtils.dirname(mappedP), mappedAbsoluteTarget);
     return this.baseFs.symlinkSync(mappedTarget, mappedP, type);
   }
-
   async readFilePromise(p, encoding) {
     if (encoding === `utf8`) {
       return this.baseFs.readFilePromise(this.fsMapToBase(p), encoding);
@@ -1356,7 +1193,6 @@ class ProxiedFS extends FakeFS {
       return this.baseFs.readFilePromise(this.fsMapToBase(p), encoding);
     }
   }
-
   readFileSync(p, encoding) {
     if (encoding === `utf8`) {
       return this.baseFs.readFileSync(this.fsMapToBase(p), encoding);
@@ -1364,39 +1200,30 @@ class ProxiedFS extends FakeFS {
       return this.baseFs.readFileSync(this.fsMapToBase(p), encoding);
     }
   }
-
   async readdirPromise(p, opts) {
     return this.baseFs.readdirPromise(this.mapToBase(p), opts);
   }
-
   readdirSync(p, opts) {
     return this.baseFs.readdirSync(this.mapToBase(p), opts);
   }
-
   async readlinkPromise(p) {
     return this.mapFromBase(await this.baseFs.readlinkPromise(this.mapToBase(p)));
   }
-
   readlinkSync(p) {
     return this.mapFromBase(this.baseFs.readlinkSync(this.mapToBase(p)));
   }
-
   async truncatePromise(p, len) {
     return this.baseFs.truncatePromise(this.mapToBase(p), len);
   }
-
   truncateSync(p, len) {
     return this.baseFs.truncateSync(this.mapToBase(p), len);
   }
-
   async ftruncatePromise(fd, len) {
     return this.baseFs.ftruncatePromise(fd, len);
   }
-
   ftruncateSync(fd, len) {
     return this.baseFs.ftruncateSync(fd, len);
   }
-
   watch(p, a, b) {
     return this.baseFs.watch(
           this.mapToBase(p),
@@ -1404,7 +1231,6 @@ class ProxiedFS extends FakeFS {
           b
     );
   }
-
   watchFile(p, a, b) {
     return this.baseFs.watchFile(
           this.mapToBase(p),
@@ -1412,11 +1238,9 @@ class ProxiedFS extends FakeFS {
           b
     );
   }
-
   unwatchFile(p, cb) {
     return this.baseFs.unwatchFile(this.mapToBase(p), cb);
   }
-
   fsMapToBase(p) {
     if (typeof p === `number`) {
       return p;
@@ -1429,13 +1253,11 @@ class ProxiedFS extends FakeFS {
 const NUMBER_REGEXP = /^[0-9]+$/;
 const VIRTUAL_REGEXP = /^(\/(?:[^/]+\/)*?(?:\$\$virtual|__virtual__))((?:\/((?:[^/]+-)?[a-f0-9]+)(?:\/([^/]+))?)?((?:\/.*)?))$/;
 const VALID_COMPONENT = /^([^/]+-)?[a-f0-9]+$/;
-
 class VirtualFS extends ProxiedFS {
   constructor({ baseFs = new NodeFS() } = {}) {
     super(ppath);
     this.baseFs = baseFs;
   }
-
   static makeVirtualPath(base, component, to) {
     if (ppath.basename(base) !== `__virtual__`)
       throw new Error(`Assertion failed: Virtual folders must be named "__virtual__"`);
@@ -1450,7 +1272,6 @@ class VirtualFS extends ProxiedFS {
     const fullVirtualPath = ppath.join(base, component, String(depth), ...finalSegments);
     return fullVirtualPath;
   }
-
   static resolveVirtual(p) {
     const match = p.match(VIRTUAL_REGEXP);
     if (!match || !match[3] && match[5])
@@ -1466,15 +1287,12 @@ class VirtualFS extends ProxiedFS {
     const subpath = match[5] || `.`;
     return VirtualFS.resolveVirtual(ppath.join(target, backstep, subpath));
   }
-
   getExtractHint(hints) {
     return this.baseFs.getExtractHint(hints);
   }
-
   getRealPath() {
     return this.baseFs.getRealPath();
   }
-
   realpathSync(p) {
     const match = p.match(VIRTUAL_REGEXP);
     if (!match)
@@ -1484,7 +1302,6 @@ class VirtualFS extends ProxiedFS {
     const realpath = this.baseFs.realpathSync(this.mapToBase(p));
     return VirtualFS.makeVirtualPath(match[1], match[3], realpath);
   }
-
   async realpathPromise(p) {
     const match = p.match(VIRTUAL_REGEXP);
     if (!match)
@@ -1494,7 +1311,6 @@ class VirtualFS extends ProxiedFS {
     const realpath = await this.baseFs.realpathPromise(this.mapToBase(p));
     return VirtualFS.makeVirtualPath(match[1], match[3], realpath);
   }
-
   mapToBase(p) {
     if (p === ``)
       return p;
@@ -1504,7 +1320,6 @@ class VirtualFS extends ProxiedFS {
     const resolvedP = VirtualFS.resolveVirtual(this.baseFs.resolve(p));
     return ppath.relative(resolvedRoot, resolvedP) || PortablePath.dot;
   }
-
   mapFromBase(p) {
     return p;
   }
@@ -1519,7 +1334,6 @@ const HAS_LAZY_LOADED_TRANSLATORS = major > 19 || major === 19 && minor >= 3;
 
 const builtinModules = new Set(Module.builtinModules || Object.keys(process.binding(`natives`)));
 const isBuiltinModule = (request) => request.startsWith(`node:`) || builtinModules.has(request);
-
 function readPackageScope(checkPath) {
   const rootSeparatorIndex = checkPath.indexOf(npath.sep);
   let separatorIndex;
@@ -1538,7 +1352,6 @@ function readPackageScope(checkPath) {
   } while (separatorIndex > rootSeparatorIndex);
   return false;
 }
-
 function readPackage(requestPath) {
   const jsonPath = npath.resolve(requestPath, `package.json`);
   if (!fs.existsSync(jsonPath))
@@ -1555,7 +1368,6 @@ async function tryReadFile$1(path2) {
     throw error;
   }
 }
-
 function tryParseURL(str, base) {
   try {
     return new URL$1(str, base);
@@ -1563,13 +1375,10 @@ function tryParseURL(str, base) {
     return null;
   }
 }
-
 let entrypointPath = null;
-
 function setEntrypointPath(file) {
   entrypointPath = file;
 }
-
 function getFileFormat(filepath) {
   var _a, _b;
   const ext = path.extname(filepath);
@@ -1689,7 +1498,6 @@ function createErrorType(code, messageCreator, errorType) {
     }
   };
 }
-
 const ERR_PACKAGE_IMPORT_NOT_DEFINED = createErrorType(
       `ERR_PACKAGE_IMPORT_NOT_DEFINED`,
       (specifier, packagePath, base) => {
@@ -1738,7 +1546,6 @@ function filterOwnProperties(source, keys) {
 }
 
 const packageJSONCache = new SafeMap();
-
 function getPackageConfig(path, specifier, base, readFileSyncFn) {
   const existing = packageJSONCache.get(path);
   if (existing !== void 0) {
@@ -1799,7 +1606,6 @@ function getPackageConfig(path, specifier, base, readFileSyncFn) {
   packageJSONCache.set(path, packageConfig);
   return packageConfig;
 }
-
 function getPackageScopeConfig(resolved, readFileSyncFn) {
   let packageJSONUrl = new URL("./package.json", resolved);
   while (true) {
@@ -1865,7 +1671,6 @@ function throwImportNotDefined(specifier, packageJSONUrl, base) {
         fileURLToPath(base)
   );
 }
-
 function throwInvalidSubpath(subpath, packageJSONUrl, internal, base) {
   const reason = `request is not a valid subpath for the "${internal ? "imports" : "exports"}" resolution of ${fileURLToPath(packageJSONUrl)}`;
   throw new ERR_INVALID_MODULE_SPECIFIER(
@@ -1874,7 +1679,6 @@ function throwInvalidSubpath(subpath, packageJSONUrl, internal, base) {
         base && fileURLToPath(base)
   );
 }
-
 function throwInvalidPackageTarget(subpath, target, packageJSONUrl, internal, base) {
   if (typeof target === "object" && target !== null) {
     target = JSONStringify(target, null, "");
@@ -1889,10 +1693,8 @@ function throwInvalidPackageTarget(subpath, target, packageJSONUrl, internal, ba
         base && fileURLToPath(base)
   );
 }
-
 const invalidSegmentRegEx = /(^|\\|\/)((\.|%2e)(\.|%2e)?|(n|%6e|%4e)(o|%6f|%4f)(d|%64|%44)(e|%65|%45)(_|%5f)(m|%6d|%4d)(o|%6f|%4f)(d|%64|%44)(u|%75|%55)(l|%6c|%4c)(e|%65|%45)(s|%73|%53))(\\|\/|$)/i;
 const patternRegEx = /\*/g;
-
 function resolvePackageTargetString(target, subpath, match, packageJSONUrl, base, pattern, internal, conditions) {
   if (subpath !== "" && !pattern && target[target.length - 1] !== "/")
     throwInvalidPackageTarget(match, target, packageJSONUrl, internal, base);
@@ -1934,14 +1736,12 @@ function resolvePackageTargetString(target, subpath, match, packageJSONUrl, base
   }
   return new URL(subpath, resolved);
 }
-
 function isArrayIndex(key) {
   const keyNum = +key;
   if (`${keyNum}` !== key)
     return false;
   return keyNum >= 0 && keyNum < 4294967295;
 }
-
 function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, base, pattern, internal, conditions) {
   if (typeof target === "string") {
     return resolvePackageTargetString(
@@ -2033,7 +1833,6 @@ function resolvePackageTarget(packageJSONUrl, target, subpath, packageSubpath, b
         base
   );
 }
-
 function patternKeyCompare(a, b) {
   const aPatternIndex = StringPrototypeIndexOf(a, "*");
   const bPatternIndex = StringPrototypeIndexOf(b, "*");
@@ -2053,7 +1852,6 @@ function patternKeyCompare(a, b) {
     return 1;
   return 0;
 }
-
 function packageImportsResolve({ name, base, conditions, readFileSyncFn }) {
   if (name === "#" || StringPrototypeStartsWith(name, "#/") || StringPrototypeEndsWith(name, "/")) {
     const reason = "is not a valid internal imports specifier name";
@@ -2125,7 +1923,6 @@ function packageImportsResolve({ name, base, conditions, readFileSyncFn }) {
 
 const pathRegExp = /^(?![a-zA-Z]:[\\/]|\\\\|\.{0,2}(?:\/|$))((?:node:)?(?:@[^/]+\/)?[^/]+)\/*(.*|)$/;
 const isRelativeRegexp = /^\.{0,2}\//;
-
 function tryReadFile(filePath) {
   try {
     return fs.readFileSync(filePath, `utf8`);
@@ -2135,7 +1932,6 @@ function tryReadFile(filePath) {
     throw err;
   }
 }
-
 async function resolvePrivateRequest(specifier, issuer, context, nextResolve) {
   const resolved = packageImportsResolve({
     name: specifier,
@@ -2151,7 +1947,6 @@ async function resolvePrivateRequest(specifier, issuer, context, nextResolve) {
     return resolve$1(resolved, context, nextResolve);
   }
 }
-
 async function resolve$1(originalSpecifier, context, nextResolve) {
   var _a, _b;
   const { findPnpApi } = moduleExports;

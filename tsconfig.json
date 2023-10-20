@@ -1,0 +1,30 @@
+{
+  "ts-node": {
+    "files": true,
+    "swc": true,
+    "require": [
+      "tsconfig-paths/register"
+    ]
+  },
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES6",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": [
+      "es6",
+      "es2020.bigint"
+    ],
+    "outDir": "./build",
+    "strict": true,
+    "importsNotUsedAsValues": "error",
+    "incremental": true,
+    "ignoreDeprecations": "5.0"
+  },
+  "exclude": [
+    ".yarn",
+    "build"
+  ]
+}
