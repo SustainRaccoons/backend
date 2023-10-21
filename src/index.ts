@@ -8,6 +8,7 @@ const server = new Server({
 interface Game {
   id: string,
   state: string,
+  isHostWhite: boolean,
   host: WebSocket,
   player?: WebSocket,
 }
@@ -21,14 +22,17 @@ server.on("connection", (socket: WebSocket) => {
     console.log(msg);
     if (msg === "host") {
       const id = crypto.randomBytes(3).toString("hex");
+      const white = Math.random() > .5;
       games.push({
         id,
         state: "",
+        isHostWhite: white,
         host: socket,
         player: undefined,
       });
 
       socket.send(`id:${id}`);
+      socket.send(`side:${white ? "white" : "black"}`);
       return;
     }
 
@@ -42,6 +46,7 @@ server.on("connection", (socket: WebSocket) => {
         socket.send("join:success");
         game.host.send("join:success");
         socket.send(`state:${game.state}`);
+        socket.send(`side:${game.isHostWhite ? "black" : "white"}`);
       }
       return;
     }
